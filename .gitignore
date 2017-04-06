@@ -1,33 +1,29 @@
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+### OSX ###
+*.DS_Store
+.AppleDouble
+.LSOverride
 
-# Precompiled Headers
-*.gch
-*.pch
+# Icon must end with two \r
+Icon
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+# Thumbnails
+._*
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
-# Debug files
-*.dSYM/
-*.su
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# End of https://www.gitignore.io/api/osx
