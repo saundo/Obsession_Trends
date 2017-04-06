@@ -5,6 +5,7 @@ Created on Thu Apr  6 11:13:18 2017
 
 @author: csaunders
 """
+import pandas as pd
 from standard_imports import time_API
 from API_calls import time_spent
 from API_calls import articles_obsessions

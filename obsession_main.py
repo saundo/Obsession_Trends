@@ -28,27 +28,45 @@ readKey = ("55cc20862508b1fae033656ba4bdb8dd0a0d71fdb6aa973c6f5856847d2e0889"
 projectID = '5605844c46f9a7307bca48aa'
 keen = KeenClient(project_id=projectID, read_key=readKey)
 
-from standard_imports import time_API
+
 
 from API_calls import dumpin
 from API_calls import time_spent
 from API_calls import articles_obsessions
 
+import t2t1_changes
+import hours_article_obsession
+
 # get time periods of comparison: t2 / t1; end dates are exclusive
-t1 = {'start':'2017-03-01', 'end':'2017-03-08'}
-t2 = {'start':'2017-03-08', 'end':'2017-03-15'}
+t1 = {'start':'2017-03-01', 'end':'2017-03-03'}
+t2 = {'start':'2017-03-03', 'end':'2017-03-05'}
 
-time = time_API()
-# get high level page views for t2
-time.start = t2['start']
-time.end = t2['end']
-start, end = time.get_time()
-t2_pv_data = articles_obsessions(start, end)
-t2_time_data = time_spent(start, end)
+def macro_trend(t1, t2):
+    """returns high level trends, t2 / t1
+    t1 and t2 MUST be dictionaries of the form:
+    t2 = {'start':'2017-03-03', 'end':'2017-03-05'}
+    
+    returns 5 objects:
+    t1pv - keen API return: page views, articles and obsessions, t1
+    t2pv - keen API return: page views, articles and obsessions, t2
+    t1time - keen API return: total time, articles and obsessions, t1 
+    t2time - keen API return: total time, articles and obsessions, t2
+    tc - sorted DataFrame, merging pvs and time, calculating difference
+    """
+    t1pv, t2pv, t1time, t2time, tc = t2t1_changes.main(t1, t2)
 
-# get high level page views for t1
-time.start = t1['start']
-time.end = t1['end']
-start, end = time.get_time()
-t1_pv_data = articles_obsessions(start, end)
-t1_time_data = time_spent(start, end)
+    print('obsession pv change', tc.iloc[1:]['pv t2'].sum() / 
+          tc.iloc[1:]['pv t1'].sum())
+    print('obsession time change', tc.iloc[1:]['time t2'].sum() / 
+      tc.iloc[1:]['time t1'].sum())
+    
+    return t1pv, t2pv, t1time, t2time, tc
+
+def hours_per_article(pv_data, time_data, num=500):
+    """num is the minimum number of page views to include in this analysis
+    """
+    df = hours_article_obsession.main(pv_data, time_data, num=num)
+    return df
+        
+    
+    
