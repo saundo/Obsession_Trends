@@ -29,3 +29,26 @@ projectID = '5605844c46f9a7307bca48aa'
 keen = KeenClient(project_id=projectID, read_key=readKey)
 
 from standard_imports import time_API
+
+from API_calls import dumpin
+from API_calls import time_spent
+from API_calls import articles_obsessions
+
+# get time periods of comparison: t2 / t1; end dates are exclusive
+t1 = {'start':'2017-03-01', 'end':'2017-03-08'}
+t2 = {'start':'2017-03-08', 'end':'2017-03-15'}
+
+time = time_API()
+# get high level page views for t2
+time.start = t2['start']
+time.end = t2['end']
+start, end = time.get_time()
+t2_pv_data = articles_obsessions(start, end)
+t2_time_data = time_spent(start, end)
+
+# get high level page views for t1
+time.start = t1['start']
+time.end = t1['end']
+start, end = time.get_time()
+t1_pv_data = articles_obsessions(start, end)
+t1_time_data = time_spent(start, end)
