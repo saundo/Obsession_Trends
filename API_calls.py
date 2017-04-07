@@ -105,3 +105,38 @@ def articles_obsessions(start, end):
     print(start, end, datetime.now() - t)
     return data
 
+@retry(stop_max_attempt_number=3)
+def inc_time_by_article(start, end, article_list):
+
+    """
+    keen API call - incremental time; MANY groupbys so the start, end timeframe needs to be a short interval
+    else Keen will fail
+    """
+    
+    event = 'read_article' 
+
+    timeframe = {'start':start, 'end':end}
+    
+    group_by = ('article.id', 'article.obsessions', 'read.time.incremental.seconds', 'read.type')
+ 
+    property_name1 = 'read.type'
+    operator1 = 'in'
+    property_value1 = (25, 50, 75, 'complete')
+
+    property_name2 = 'article.id'
+    operator2 = 'in'
+    property_value2 = list(article_list)
+    
+
+    filters = [{"property_name":property_name1, "operator":operator1, "property_value":property_value1},
+               {"property_name":property_name2, "operator":operator2, "property_value":property_value2}]
+
+    t = datetime.now()
+
+    data = keen.count(event, 
+                      timeframe=timeframe,
+                      group_by=group_by,
+                      filters=filters)
+
+    print(start, end, datetime.now() - t)
+    return data

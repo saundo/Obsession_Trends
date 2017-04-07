@@ -3,8 +3,21 @@
 """
 Created on Thu Apr  6 11:13:18 2017
 
+Executable for macro_trend function
+Returns high level trends, t2 / t1
+t1 and t2 MUST be dictionaries of the form:
+t2 = {'start':'2017-03-03', 'end':'2017-03-05'}
+
+returns 5 objects:
+t1pv - keen API return: page views, articles and obsessions, t1
+t2pv - keen API return: page views, articles and obsessions, t2
+t1time - keen API return: total time, articles and obsessions, t1 
+t2time - keen API return: total time, articles and obsessions, t2
+tc - sorted DataFrame, merging pvs and time, calculating difference
+
 @author: csaunders
 """
+
 import pandas as pd
 from standard_imports import time_API
 from API_calls import time_spent
