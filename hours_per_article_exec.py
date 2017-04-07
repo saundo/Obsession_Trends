@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Calculates average time spent per article for a given obsession, with a min 
-page view threshold (num) to include
-Formula - for a given obsession sum of total time spent for all articles, 
-divided by number of articles that comprise of that obsession
+Created on Thu Apr  6 11:50:14 2017
+
+@author: csaunders
 """
 
 import pandas as pd
