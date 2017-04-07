@@ -9,13 +9,19 @@ divided by number of articles that comprise of that obsession
 
 import pandas as pd
 
-def scrub_blank(val):
-        if val == "":
-            return "ObsessionLess - SAD!"
-        else:
-            return val
-def main(pv_data, time_data, num=500):
+def scrub_blank(val):    
+    """replaces the "" for no obsession with the value contained below
     """
+    if val == "":
+        return "## NO OBSESSION ##"
+    else:
+        return val
+def main(pv_data, time_data, num=500):
+    """primary function: pv_data and time_data should be from same time 
+    interval; 
+    num refers to threshold of pageviews; so default num=500 means that only
+    articles with a minimum of 500 page views will be considered
+    returns- sorted DataFrame
     """
     
     df = pd.DataFrame(pv_data)
