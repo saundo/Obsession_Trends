@@ -40,14 +40,14 @@ def main(t1, t2):
     # get high level page views for t2
     time.start = t2['start']
     time.end = t2['end']
-    start, end = time.get_time()
+    start, end = time.set_time()
     t2_pv_data = articles_obsessions(start, end)
     t2_time_data = time_spent(start, end)
     
     # get high level page views for t1
     time.start = t1['start']
     time.end = t1['end']
-    start, end = time.get_time()
+    start, end = time.set_time()
     t1_pv_data = articles_obsessions(start, end)
     t1_time_data = time_spent(start, end)
     
