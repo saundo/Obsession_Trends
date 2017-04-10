@@ -55,8 +55,8 @@ class time_API:
         start = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.start in j]
         end = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.end in k]
 
-        self.start_UTC = self.timeframe[start[0]][0]
-        self.end_UTC = self.timeframe[end[0]][1]
+        self.start_UTC = self.timeframe_daily[start[0]][0]
+        self.end_UTC = self.timeframe_daily[end[0]][1]
         end = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.end_UTC in k]
         self.timeframe_daily = self.timeframe_daily[:end[0]+1]
         
