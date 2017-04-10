@@ -101,7 +101,6 @@ class time_API:
         
         print(datetime.now() - t)
         
-        self.timeframe = timeframe
         return timeframe
     
     def custom_time(self, hours=6):
