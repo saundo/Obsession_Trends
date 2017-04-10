@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import scipy
 import math
 import sys
-import pdb
 from retrying import retry
 from datetime import datetime
 from datetime import timedelta
@@ -32,54 +31,51 @@ class time_API:
     def __init__(self):
         self.start = (datetime.now() + timedelta(-7)).strftime('%Y-%m-%d') 
         self.end = datetime.now().strftime('%Y-%m-%d')
-        self.timeframe = None
+        self.timeframe_daily = None
+        self.timeframe_hourly = None 
         self.time_parameter = None
-    
-    def get_time(self):
-        """returns start, end to be used in keen API calls
+        self.start_UTC = None
+        self.end_UTC = None
+        
+    def set_time(self):
+        """used to set the time and timeframes for making API calls, default
+        time setting will be previous_7_days, unless self.start and self.end
+        are explicitly set
+        
+        running will update all of the class attributes that are by default
+        set to None
         """
         
         start_datetime = datetime.strptime(self.start, '%Y-%m-%d')
         days = ((datetime.now() - start_datetime).days)
-        try:
-            left = self.time_parameter.find('_') + 1
-            right = self.time_parameter.rfind('_')
-            old_days = int(self.time_parameter[left:right])
-        except:
-            pass
+                              
+        self.time_parameter = 'previous_' + str(days) + '_days'
+        self.timeframe_daily = self.timeframe_API_call(interval='daily')
+
+        start = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.start in j]
+        end = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.end in k]
+
+        self.start_UTC = self.timeframe[start[0]][0]
+        self.end_UTC = self.timeframe[end[0]][1]
+        end = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.end_UTC in k]
+        self.timeframe_daily = self.timeframe_daily[:end[0]+1]
         
-        if self.time_parameter != None and old_days > days:
-            start = [i for i,(j,k) in enumerate(self.timeframe) if self.start in j]
-            end = [i for i,(j,k) in enumerate(self.timeframe) if self.end in k]
-
-            start = self.timeframe[start[0]][0]
-            end = self.timeframe[end[0]][1]
-
-            return start, end
-
-        else:                               
+        self.timeframe_hourly = self.timeframe_API_call(interval='hourly')
+        end = [i for i,(j,k) in enumerate(self.timeframe_hourly) if self.end_UTC in k]
+        self.timeframe_hourly = self.timeframe_hourly[:end[0]+1]
         
-            self.time_parameter = 'previous_' + str(days) + '_days'
-            timeframe = self.timeframe_API_call()
-
-            start = [i for i,(j,k) in enumerate(timeframe) if self.start in j]
-            end = [i for i,(j,k) in enumerate(timeframe) if self.end in k]
-
-            start = timeframe[start[0]][0]
-            end = timeframe[end[0]][1]
-
-            return start, end
-
-                                                 
-    def timeframe_API_call(self):
-        """
+        return self.start_UTC, self.end_UTC
+    
+    def timeframe_API_call(self, interval='daily'):
+        """API call against dummy serach, meant to have zero results but to 
+        return a clean timeframe / interval on which to conduct API calls
         """
         from collections import namedtuple
         
         event = 'click_article_link'
     
         timeframe= self.time_parameter
-        interval = 'daily'
+        interval = interval
         timezone = "US/Eastern"
     
         group_by = None
@@ -99,7 +95,7 @@ class time_API:
                            group_by=group_by, 
                            filters=filters)
         
-        Timeframe = namedtuple('daily_time', 'start end')
+        Timeframe = namedtuple('time', 'start end')
         timeframe = [Timeframe(i['timeframe']['start'], 
                                i['timeframe']['end']) for i in data]
         
@@ -107,3 +103,15 @@ class time_API:
         
         self.timeframe = timeframe
         return timeframe
+    
+    def custom_time(self, hours=6):
+        """used to create a custom, more narrowly defined timeframe for making
+        API calls for when Keen is being a bitch and unable to handle 
+        lot's of groups or whatever happens to be the lame reason
+        defaults to 6 hours, but can be set to any interval; note that last
+        time is likely not going to be this interval
+        """
+        tz = self.timeframe_hourly[::hours]
+        tz = [(tz[i][0], tz[i+1][0]) for i in range(len(tz)-1)]
+        tz.append((tz[-1][-1], self.end_UTC))
+        return tz
