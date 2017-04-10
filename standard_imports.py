@@ -32,15 +32,22 @@ class time_API:
     def __init__(self):
         self.start = (datetime.now() + timedelta(-7)).strftime('%Y-%m-%d') 
         self.end = datetime.now().strftime('%Y-%m-%d')
-        self.timeframe = None
+
+        self.timeframe_daily = None
+        self.timeframe_hourly = None 
+
         self.time_parameter = None
-    
-    def get_time(self):
-        """returns start, end to be used in keen API calls
+
+        self.start_UTC = None
+        self.end_UTC = None
+        
+    def set_time(self):
+        """
         """
         
         start_datetime = datetime.strptime(self.start, '%Y-%m-%d')
         days = ((datetime.now() - start_datetime).days)
+        
         try:
             left = self.time_parameter.find('_') + 1
             right = self.time_parameter.rfind('_')
@@ -48,30 +55,25 @@ class time_API:
         except:
             pass
         
-        if self.time_parameter != None and old_days > days:
-            start = [i for i,(j,k) in enumerate(self.timeframe) if self.start in j]
-            end = [i for i,(j,k) in enumerate(self.timeframe) if self.end in k]
+                                       
+        self.time_parameter = 'previous_' + str(days) + '_days'
+        self.timeframe_daily = self.timeframe_API_call(interval='daily')
 
-            start = self.timeframe[start[0]][0]
-            end = self.timeframe[end[0]][1]
+        start = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.start in j]
+        end = [i for i,(j,k) in enumerate(self.timeframe_daily) if self.end in k]
 
-            return start, end
-
-        else:                               
+        self.start_UTC = self.timeframe[start[0]][0]
+        self.end_UTC = self.timeframe[end[0]][1]
+        end = [i for i,(j,k) in enumerate(time.timeframe_daily) if time.end_UTC in k]
+        self.timeframe_daily = self.timeframe_daily[:end[0]+1]
         
-            self.time_parameter = 'previous_' + str(days) + '_days'
-            timeframe = self.timeframe_API_call()
-
-            start = [i for i,(j,k) in enumerate(timeframe) if self.start in j]
-            end = [i for i,(j,k) in enumerate(timeframe) if self.end in k]
-
-            start = timeframe[start[0]][0]
-            end = timeframe[end[0]][1]
-
-            return start, end
-
-                                                 
-    def timeframe_API_call(self):
+        self.timeframe_hourly = self.timeframe_API_call(interval='hourly')
+        end = [i for i,(j,k) in enumerate(self.timeframe_hourly) if self.end_UTC in k]
+        self.timeframe_hourly = self.timeframe_hourly[:end[0]+1]
+        
+        return self.start_UTC, self.end_UTC
+    
+    def timeframe_API_call(self, interval='daily'):
         """
         """
         from collections import namedtuple
@@ -79,7 +81,7 @@ class time_API:
         event = 'click_article_link'
     
         timeframe= self.time_parameter
-        interval = 'daily'
+        interval = interval
         timezone = "US/Eastern"
     
         group_by = None
@@ -99,7 +101,7 @@ class time_API:
                            group_by=group_by, 
                            filters=filters)
         
-        Timeframe = namedtuple('daily_time', 'start end')
+        Timeframe = namedtuple('time', 'start end')
         timeframe = [Timeframe(i['timeframe']['start'], 
                                i['timeframe']['end']) for i in data]
         
@@ -107,3 +109,11 @@ class time_API:
         
         self.timeframe = timeframe
         return timeframe
+    
+    def custom_time(self, hours=6):
+        """used to create a custom 
+        """
+        tz = self.timeframe_hourly[::hours]
+        tz = [(tz[i][0], tz[i+1][0]) for i in range(len(tz)-1)]
+        tz.append((tz[-1][-1], time.end_UTC))
+        return tz
