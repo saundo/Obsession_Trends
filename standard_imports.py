@@ -113,5 +113,5 @@ class time_API:
         """
         tz = self.timeframe_hourly[::hours]
         tz = [(tz[i][0], tz[i+1][0]) for i in range(len(tz)-1)]
-        tz.append((tz[-1][-1], time.end_UTC))
+        tz.append((tz[-1][-1], self.end_UTC))
         return tz
