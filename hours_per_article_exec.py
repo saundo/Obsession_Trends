@@ -22,7 +22,7 @@ def unique_obsessions(dfpv, dftime, num = 500):
     """
     """
     dfpv = dfpv.groupby('article.id').sum().reset_index()
-    dfpv= dfpv[dfpv['result'] >= num]
+    dfpv = dfpv[dfpv['result'] >= num]
     dftime = dftime.groupby('article.id').sum().reset_index()
     df = dfpv.merge(dftime, on='article.id')
     
@@ -67,7 +67,7 @@ def main(dfpv, dftime, num=500):
     dfpv = dfpv[dfpv['result'] >= num]
     dftime = dftime.groupby('article.id').sum().reset_index()
     df = dfpv.merge(dftime, on='article.id')
-    df.columns = ['article.id', 'page views', 'in', 'time']
+    df.columns = ['article.id', 'page views', 'time']
     df = df[['article.id', 'page views', 'time']]
     
     df_unique_obsess = unique_obsessions(dfpv, dftime, num=num)
