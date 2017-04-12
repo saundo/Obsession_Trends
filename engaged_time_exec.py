@@ -104,6 +104,7 @@ def main(article_list, timeframe, dump_dir):
         storage.setdefault('article.id', []).append(article)
         storage.setdefault('avg engaged time (s)', []).append(int(sum(x1)))
         print(article, 'complete')
+    df_engage = pd.DataFrame(storage)
     
     #run headline word count
     print('running API calls for headlines and word count')
@@ -119,6 +120,6 @@ def main(article_list, timeframe, dump_dir):
     df_hline['article.id'] = df_hline['article.id'].apply(lambda x: int(x))
     df_hline['article.content.words.count'] = df_hline['article.content.words.count'].apply(lambda x: int(x))
     
-    df_time = df_time.merge(df_hline, on='article.id')
+    df_engage = df_engage.merge(df_hline, on='article.id')
     
-    return df_time
+    return df_engage
