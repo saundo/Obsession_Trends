@@ -46,7 +46,7 @@ def engaged_time(article_list, timeframe, dump_dir):
     """returns the 'average engaged_time' for an article; which is calculated
     as the sum of IQR time for each article quartile divided by the count
     """
-    df_time, df_headline = engaged_time_exec.main(article_list, timeframe, dump_dir)
-    return df_time, df_headline
+    df_time = engaged_time_exec.main(article_list, timeframe, dump_dir)
+    return df_time
     
     

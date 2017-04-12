@@ -109,6 +109,16 @@ def main(article_list, timeframe, dump_dir):
     print('running API calls for headlines and word count')
     timeframe = timeframe[::6] #don't need too many data points
     run_thread(headline_word_count, article_list, timeframe, dump_dir)
-    df_headline = read_data(dump_dir)
+    df_hline = read_data(dump_dir)
     
-    return pd.DataFrame(storage), df_headline
+    #scrub df_headline
+    df_hline = df_hline.sort_values('result', ascending=False)
+    df_hline = df_hline.groupby('articles.headline.content').mean().reset_index()
+    df_hline['dupe'] = df_hline['article.id'].duplicated()
+    df_hline = df_hline[df_hline['dupe'] == False]
+    df_hline['article.id'] = df_hline['article.id'].apply(lambda x: int(x))
+    df_hline['article.content.words.count'] = df_hline['article.content.words.count'].apply(lambda x: int(x))
+    
+    df_time = df_time.merge(df_hline, on='article.id')
+    
+    return df_time
