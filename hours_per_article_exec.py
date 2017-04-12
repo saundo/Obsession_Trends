@@ -10,52 +10,46 @@ divided by number of articles that comprise of that obsession
 import numpy as np
 import pandas as pd
 
-def scrub_blank(val):    
-    """replaces the "" for no obsession with the value contained below
-    """
-    if val == "":
-        return "## NO OBSESSION ##"
-    else:
-        return val
-    
-def unique_obsessions(dfpv, dftime, num = 500):
+def unique_obsessions(df_pv_in, df_time_in, num = 500):
     """
     """
-    dfpv = dfpv.groupby('article.id').sum().reset_index()
-    dfpv = dfpv[dfpv['result'] >= num]
-    dftime = dftime.groupby('article.id').sum().reset_index()
-    df = dfpv.merge(dftime, on='article.id')
+    pv = df_pv_in.groupby('article.id').sum().reset_index()
+    pv = pv[pv['result'] >= num]
+    print(pv['article.id'].nunique())
+    tt = df_time_in.groupby('article.id').sum().reset_index()
+    df = pv.merge(tt, on='article.id')
     
     #remove articles that don't make the cut; IN says that the articles are in the article_list
     article_list = set(df['article.id'])
-    dfpv['in'] = dfpv['article.id'].apply(lambda x: x in article_list)
+    df_pv = df_pv_in.copy()
+    df_pv['in'] = df_pv['article.id'].apply(lambda x: x in article_list)
     
     #do a first cut of removing duplicates
-    dft = dfpv[dfpv['in'] == True]
-    dft = dft[['article.id', 'article.obsessions']].drop_duplicates()
+    df_pv = df_pv[df_pv['in'] == True]
+    df_pv = df_pv[['article.id', 'article.obsessions']].drop_duplicates()
     
     #find the remaining duplicates
-    dftt = dft.groupby('article.id').count().reset_index()
-    remaining_dupes = set(dftt[dftt['article.obsessions'] > 1]['article.id'])
+    df_pv2 = df_pv.groupby('article.id').count().reset_index()
+    remaining_dupes = set(df_pv2[df_pv2['article.obsessions'] > 1]['article.id'])
     
-    dft['dupe'] = dft['article.id'].apply(lambda x: x in remaining_dupes)
-    dft_unique = dft[dft['dupe'] != True]
-    dft_dupe = dft[dft['dupe'] == True].copy()
+    df_pv['dupe'] = df_pv['article.id'].apply(lambda x: x in remaining_dupes)
+    df_unique = df_pv[df_pv['dupe'] != True]
+    df_dupe = df_pv[df_pv['dupe'] == True].copy()
     
     obsess_storage = {}
-    tracker = len(set(dft_dupe['article.id']))
-    for i, article in enumerate(set(dft_dupe['article.id'])):
-        x1 = dfpv[dfpv['article.id'] == article]
+    tracker = len(set(df_dupe['article.id']))
+    for i, article in enumerate(set(df_dupe['article.id'])):
+        x1 = df_pv[df_pv['article.id'] == article]
         obsess_storage.setdefault('article.obsessions', []).append(x1['article.obsessions'].values[0])
         obsess_storage.setdefault('article.id', []).append(article)
         if int(i / tracker * 100) % 10 == 0:
             print(int(i / tracker * 100), '% ', end='')        
         
-    df_FINAL = dft_unique[['article.id', 'article.obsessions']].append(pd.DataFrame(obsess_storage))
+    df_FINAL = df_unique[['article.id', 'article.obsessions']].append(pd.DataFrame(obsess_storage))
     return df_FINAL
 
 
-def main(dfpv, dftime, num=500):
+def main(df_pv_in, df_time_in, num=500):
     """primary function: pv_data and time_data should be from same time 
     interval; 
     num refers to threshold of pageviews; so default num=500 means that only
@@ -63,14 +57,13 @@ def main(dfpv, dftime, num=500):
     returns- sorted DataFrame
     """
     
-    dfpv = dfpv.groupby('article.id').sum().reset_index()
+    dfpv = df_pv_in.groupby('article.id').sum().reset_index()
     dfpv = dfpv[dfpv['result'] >= num]
-    dftime = dftime.groupby('article.id').sum().reset_index()
+    dftime = df_time_in.groupby('article.id').sum().reset_index()
     df = dfpv.merge(dftime, on='article.id')
     df.columns = ['article.id', 'page views', 'time']
     df = df[['article.id', 'page views', 'time']]
-    
-    df_unique_obsess = unique_obsessions(dfpv, dftime, num=num)
+    df_unique_obsess = unique_obsessions(df_pv_in, df_time_in, num=num)
     df = df.merge(df_unique_obsess, on='article.id')
     df = df.sort_values('page views', ascending=False)
     
