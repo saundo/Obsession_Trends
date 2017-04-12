@@ -113,7 +113,7 @@ def main(article_list, timeframe, dump_dir):
     
     #scrub df_headline
     df_hline = df_hline.sort_values('result', ascending=False)
-    df_hline = df_hline.groupby('articles.headline.content').mean().reset_index()
+    df_hline = df_hline.groupby('article.headline.content').mean().reset_index()
     df_hline['dupe'] = df_hline['article.id'].duplicated()
     df_hline = df_hline[df_hline['dupe'] == False]
     df_hline['article.id'] = df_hline['article.id'].apply(lambda x: int(x))
