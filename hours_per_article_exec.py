@@ -7,6 +7,7 @@ Formula - for a given obsession sum of total time spent for all articles,
 divided by number of articles that comprise of that obsession
 """
 
+import numpy as np
 import pandas as pd
 
 def main(df_pv_in, df_time_in, num=500):
