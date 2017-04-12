@@ -114,7 +114,7 @@ def main(t1, t2, dump_dir, API_interval=24):
     t2_pv_data = read_data(dump_dir).sort_values('result', ascending=False)
     
     run_thread(time_spent, timeframe, dump_dir) 
-    t2_time_data = read_data(dump_dir)
+    t2_time_data = read_data(dump_dir).sort_values('result', ascending=False)
     
     # t1 time setting
     time.start = t1['start']
