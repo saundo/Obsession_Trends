@@ -15,12 +15,13 @@ import os
 from queue import Queue
 from threading import Thread
 from API_calls import inc_time_by_article
+from API_calls import headline_word_count
 
-def pump_and_dump(start, end, article_list, dump_dir):
+def pump_and_dump(func, start, end, article_list, dump_dir):
     """makes a KEEN API call, and then saves the file to the given dump_dir
     """
     
-    data = inc_time_by_article(start, end, article_list)
+    data = func(start, end, article_list)
     
     dump_dir = dump_dir
     ref = start[:16] + '--' + end[:16] + '--' + 'name?'
@@ -28,7 +29,24 @@ def pump_and_dump(start, end, article_list, dump_dir):
 
     with open(file, 'wb') as f:
         pickle.dump(data, f)
+
+def read_data(dump_dir):
+    os.chdir(dump_dir)
+    file_list = os.listdir()
+    file_list = [i for i in file_list if 'name?' in i]
         
+    print('compiling files from API calls together')
+    storage = []
+    for file in file_list:
+        with open(file, 'rb') as f:
+            x1 = pickle.load(f)
+        df = pd.DataFrame(x1)
+        storage.append(df)
+        os.remove(file)
+        
+    df = pd.concat(storage)
+    return df   
+    
 class DownloadWorker1(Thread):
     def __init__(self, queue):
         Thread.__init__(self)
@@ -36,12 +54,12 @@ class DownloadWorker1(Thread):
         
     def run(self):
         while True:
-            start, end, article_list, dump_dir = self.queue.get()
-            pump_and_dump(start, end, article_list, dump_dir)
+            func, start, end, article_list, dump_dir = self.queue.get()
+            pump_and_dump(func, start, end, article_list, dump_dir)
             self.queue.task_done()
             
             
-def run_thread(article_list, timeframe, dump_dir):
+def run_thread(func, article_list, timeframe, dump_dir):
     """timeframe needs to be a tuple of start, end
     """
     queue = Queue()
@@ -52,7 +70,7 @@ def run_thread(article_list, timeframe, dump_dir):
         worker.start()
     
     for start, end in timeframe:
-        queue.put((start, end, article_list, dump_dir))
+        queue.put((func, start, end, article_list, dump_dir))
 
     queue.join()
     
@@ -73,30 +91,24 @@ def engaged_time_calc(df, article_id, low, high):
     return storage
 
 def main(article_list, timeframe, dump_dir):
-    print('running API calls')
-    run_thread(article_list, timeframe, dump_dir)
     
-    os.chdir(dump_dir)
-    file_list = os.listdir()
-    file_list = [i for i in file_list if 'name?' in i]
-        
-    print('compiling files from API calls together')
-    storage = []
-    for file in file_list:
-        with open(file, 'rb') as f:
-            x1 = pickle.load(f)
-        df = pd.DataFrame(x1)
-        storage.append(df)
-        os.remove(file)
-        
-    df = pd.concat(storage)
+    #run inc time func threads
+    print('running API calls for time')
+    run_thread(inc_time_by_article, article_list, timeframe, dump_dir)
+    df_time = read_data(dump_dir)
     
     print('calculating engaged time per article')
     storage = {}
-    for article in set(df['article.id']):
-        x1 = engaged_time_calc(df, article, 0.5, 500)
+    for article in set(df_time['article.id']):
+        x1 = engaged_time_calc(df_time, article, 0.5, 500)
         storage.setdefault('article.id', []).append(article)
         storage.setdefault('avg engaged time (s)', []).append(int(sum(x1)))
         print(article, 'complete')
     
-    return pd.DataFrame(storage)
+    #run headline word count
+    print('running API calls for headlines and word count')
+    timeframe = timeframe[::6] #don't need too many data points
+    run_thread(headline_word_count, article_list, timeframe, dump_dir)
+    df_headline = read_data(dump_dir)
+    
+    return pd.DataFrame(storage), df_headline

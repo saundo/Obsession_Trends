@@ -140,3 +140,34 @@ def inc_time_by_article(start, end, article_list):
 
     print(start, end, datetime.now() - t)
     return data
+
+@retry(stop_max_attempt_number=3)
+def headline_word_count(start, end, article_list):
+    event = 'read_article' 
+
+    timeframe ={'start':start, 'end':end}
+
+    group_by =('article.id', 'article.headline.content', 'article.content.words.count') 
+
+
+    property_name1 = 'read.type'
+    operator1 = 'eq'
+    property_value1 = 'start'
+
+    property_name2 = 'article.id'
+    operator2 = 'in'
+    property_value2 = article_list
+
+
+    filters = [{"property_name":property_name1, "operator":operator1, "property_value":property_value1},
+               {"property_name":property_name2, "operator":operator2, "property_value":property_value2}]
+
+    t = datetime.now()
+
+    data = keen.count(event, 
+                    timeframe=timeframe,
+                    group_by=group_by,
+                    filters=filters)
+
+    print(start, end, datetime.now() - t)
+    return data
