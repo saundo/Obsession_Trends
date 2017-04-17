@@ -31,14 +31,22 @@ def main(df_pv_in, df_time_in, num=500):
     storage = {}
     for obsession in set(df['article.obsessions']):
         dft = df[df['article.obsessions'] == obsession]
-        storage.setdefault('total time (h)', []).append(int(dft['time'].sum() / 3600))
-        storage.setdefault('unique articles > 500 pv', []).append(dft['article.id'].nunique())
+        storage.setdefault('total time (h)', []).append(
+                int(dft['time'].sum() / 3600))
+        storage.setdefault('unique articles > 500 pv', []).append(
+                dft['article.id'].nunique())
         storage.setdefault('obsession', []).append(obsession)
     
-    df_obsess_totals = pd.DataFrame(storage).sort_values('total time (h)', ascending=False)
-    df_obsess_totals['avg cumulative time per article (h)'] = int(df_obsess_totals['total time (h)'] / df_obsess_totals['unique articles > 500 pv'])
+    df_obsess_totals = pd.DataFrame(storage).sort_values(
+            'total time (h)', ascending=False)
+
+    title_t1 = 'avg cumulative time per article (h)'
+    df_obsess_totals[title_t1] = (df_obsess_totals['total time (h)'] / 
+                    df_obsess_totals['unique articles > 500 pv'])
+    df_obsess_totals[title_t1] = df_obsess_totals[title_t1].apply(
+            lambda x: int(x))
     
-    df_obsess_totals = df_obsess_totals.sort_values('avg time per article (m)', ascending=False)
+    df_obsess_totals = df_obsess_totals.sort_values(title_t1, ascending=False)
     df_obsess_totals.index = np.arange(len(df_obsess_totals))
     
     return df_obsess_totals
