@@ -53,7 +53,7 @@ def engaged_time(article_list, timeframe, dump_dir):
 def non_obsession(pv_data, time_data, timeframe, dump_dir):
     """
     """
-    df = non_obsession_exec.main(pv_data, time_data, timeframe, dump_dir):
+    df = non_obsession_exec.main(pv_data, time_data, timeframe, dump_dir)
     return df
 
     
