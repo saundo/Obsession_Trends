@@ -36,7 +36,7 @@ def main(df_pv_in, df_time_in, num=500):
         storage.setdefault('obsession', []).append(obsession)
     
     df_obsess_totals = pd.DataFrame(storage).sort_values('total time (h)', ascending=False)
-    df_obsess_totals['avg time per article (m)'] = (df_obsess_totals['total time (h)'] / df_obsess_totals['unique articles > 500 pv']) / 60
+    df_obsess_totals['avg cumulative time per article (h)'] = int(df_obsess_totals['total time (h)'] / df_obsess_totals['unique articles > 500 pv'])
     
     df_obsess_totals = df_obsess_totals.sort_values('avg time per article (m)', ascending=False)
     df_obsess_totals.index = np.arange(len(df_obsess_totals))
