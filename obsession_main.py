@@ -9,6 +9,7 @@ Created on Thu Apr  6 08:02:30 2017
 import macro_trend_exec
 import hours_per_article_exec
 import engaged_time_exec
+import non_obsession_exec
 
 # get time periods of comparison: t2 / t1; end dates are exclusive
 t1 = {'start':'2017-03-01', 'end':'2017-03-03'}
@@ -48,5 +49,11 @@ def engaged_time(article_list, timeframe, dump_dir):
     """
     df_time = engaged_time_exec.main(article_list, timeframe, dump_dir)
     return df_time
-    
+
+def non_obsession(pv_data, time_data, timeframe, dump_dir):
+    """
+    """
+    df = non_obsession_exec.main(pv_data, time_data, timeframe, dump_dir):
+    return df
+
     
