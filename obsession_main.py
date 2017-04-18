@@ -21,10 +21,10 @@ def macro_trend(t1, t2, dump_dir, API_interval=24):
     t2 = {'start':'2017-03-03', 'end':'2017-03-05'}
     
     returns 5 objects:
-    pv1 - keen API return: page views, articles and obsessions, t1
-    pv2 - keen API return: page views, articles and obsessions, t2
-    t1 - keen API return: total time, articles and obsessions, t1 
-    t2 - keen API return: total time, articles and obsessions, t2
+    pv1 - DataFrame keen API return: page views, articles and obsessions, t1
+    pv2 - DataFrame keen API return: page views, articles and obsessions, t2
+    t1 - DataFrame keen API return: total time, articles and obsessions, t1 
+    t2 - DataFrame keen API return: total time, articles and obsessions, t2
     tc - sorted DataFrame, merging pvs and time, calculating difference
     """
     pv1, pv2, t1, t2, tc = macro_trend_exec.main(t1, t2, dump_dir, 
@@ -50,10 +50,15 @@ def engaged_time(article_list, timeframe, dump_dir):
     df_time = engaged_time_exec.main(article_list, timeframe, dump_dir)
     return df_time
 
-def non_obsession(pv_data, time_data, timeframe, dump_dir):
+def non_obsession(pv_data, time_data, timeframe, dump_dir, num=500):
     """
+    
+    returns:
+    df1 = article level dataframe
+    df2 - avg cumulative time per article by topic
     """
-    df = non_obsession_exec.main(pv_data, time_data, timeframe, dump_dir)
-    return df
+    df1, df2 = non_obsession_exec.main(pv_data, time_data, 
+                                       timeframe, dump_dir, num)
+    return df1, df2
 
     

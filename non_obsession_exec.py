@@ -72,7 +72,7 @@ def read_data(dump_dir):
         
     return pd.concat(storage)
 
-def main(pv_data, time_data, timeframe, dump_dir):
+def main(pv_data, time_data, timeframe, dump_dir, num):
     
     """
     timeframe needs to cover the timerange of pv_data and time_data
@@ -80,7 +80,7 @@ def main(pv_data, time_data, timeframe, dump_dir):
     timeframe = timeframe[::int(len(timeframe) / 8)]
     run_thread(non_obsession_info, timeframe, dump_dir)
     df = read_data(dump_dir)
-    df['dupe'] = df['artcle.id'].duplicated()
+    df['dupe'] = df['article.id'].duplicated()
     dfz = df[df['dupe'] == False]
     del dfz['dupe']
     del dfz['result']
@@ -93,14 +93,30 @@ def main(pv_data, time_data, timeframe, dump_dir):
     df_t = df_t.groupby('article.id').sum().reset_index()
     dfz = dfz.merge(df_t, on='article.id')
     
-    dfz.columns = ['article.id', 'article.headline.content', 'article.topic', 
-    'article.content.words.count', 'page views', 'time']
+    dfz.columns = ['article.id', 'article.headline.content', 
+    'article.content.words.count', 'article.topic', 'page views', 'time (s)']
     
     dfz = dfz[['article.id', 'article.headline.content', 'article.topic', 
-    'article.content.words.count', 'page views', 'time']]
+    'article.content.words.count', 'page views', 'time (s)']]
     
+
+    storage = {}
+    dfzz = dfz[dfz['page views'] >= num]
+    thresh_string = ('article count >= ' + str(num) + 'pvs')
+    for topic in set(dfzz['article.topic']):
+        dft = dfzz[dfzz['article.topic'] == topic]
+        storage.setdefault(thresh_string, []).append(dft['article.id'].nunique())
+        storage.setdefault('total time (h)', []).append(
+                int(dft['time (s)'].sum() / 3600))
+        storage.setdefault('page views', []).append(dft['page views'].sum())
+        storage.setdefault('topic', []).append(topic)
+    df = pd.DataFrame(storage)
+    cumul_string = 'avg cumulative time per article (h)'
+    df[cumul_string] = df['total time (h)'] / df[thresh_string]
+    df[cumul_string] = df[cumul_string].apply(lambda x: int(x))
+    df = df.sort_values(cumul_string, ascending=False)
     
-    return dfz
-    
-    
-    
+    return dfz, df
+        
+        
+        
