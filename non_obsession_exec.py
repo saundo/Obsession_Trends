@@ -79,9 +79,28 @@ def main(pv_data, time_data, timeframe, dump_dir):
     """
     timeframe = timeframe[::int(len(timeframe) / 8)]
     run_thread(non_obsession_info, timeframe, dump_dir)
-    no_obsess = read_data(dump_dir)
+    df = read_data(dump_dir)
+    df['dupe'] = df['artcle.id'].duplicated()
+    dfz = df[df['dupe'] == False]
+    del dfz['dupe']
+    del dfz['result']
     
-    return no_obsess
+    df_pv = pv_data[pv_data['article.obsessions'] == '']
+    df_pv = df_pv.groupby('article.id').sum().reset_index()
+    dfz = dfz.merge(df_pv, on='article.id')
+    
+    df_t = df_t = time_data[time_data['article.obsessions'] == '']
+    df_t = df_t.groupby('article.id').sum().reset_index()
+    dfz = dfz.merge(df_t, on='article.id')
+    
+    dfz.columns = ['article.id', 'article.headline.content', 'article.topic', 
+    'article.content.words.count', 'page views', 'time']
+    
+    dfz = dfz[['article.id', 'article.headline.content', 'article.topic', 
+    'article.content.words.count', 'page views', 'time']]
+    
+    
+    return dfz
     
     
     
